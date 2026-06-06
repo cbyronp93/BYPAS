@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRUNCH — Cajero</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --negro: #0a0a0f;
+    --dorado: #d4a017;
+    --dorado-claro: #f0bc30;
+    --gris-oscuro: #141418;
+    --gris-medio: #1e1e26;
+    --gris-borde: #2a2a36;
+    --blanco: #f0ede6;
+    --blanco-suave: #c8c4bb;
+    --verde: #1db954;
+    --rojo: #e63946;
+    --azul: #3a86ff;
+    --naranja: #f4a261;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--negro); color:var(--blanco); font-family:'DM Sans',sans-serif; min-height:100vh; }
+  body::before {
+    content:''; position:fixed; inset:0; z-index:0;
+    background:
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(212,160,23,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(58,134,255,0.05) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(255,255,255,0.015) 80px),
+      repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(255,255,255,0.015) 80px);
+    pointer-events:none;
+  }
+  .wrap { position:relative; z-index:1; max-width:580px; margin:0 auto; padding:0 16px 60px; }
+
+  header {
+    padding:28px 0 20px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--gris-borde); margin-bottom:28px;
+  }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:4px; color:var(--dorado); line-height:1; }
+  .logo span { color:var(--blanco); font-size:13px; font-family:'DM Sans'; letter-spacing:2px; display:block; margin-top:2px; font-weight:300; }
+  .fecha-badge { background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:8px; padding:8px 16px; font-family:'DM Mono',monospace; font-size:13px; color:var(--blanco-suave); text-align:right; }
+  .fecha-badge strong { display:block; color:var(--dorado); font-size:15px; }
+
+  .seccion { background:var(--gris-oscuro); border:1px solid var(--gris-borde); border-radius:16px; padding:24px; margin-bottom:14px; transition:border-color 0.2s; }
+  .seccion:hover { border-color:rgba(212,160,23,0.3); }
+  .sec-title { font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:3px; color:var(--dorado); margin-bottom:18px; display:flex; align-items:center; gap:10px; }
+  .sec-title .dot { width:8px; height:8px; border-radius:50%; }
+
+  .campo { margin-bottom:14px; }
+  .campo label { display:block; font-size:11px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--blanco-suave); margin-bottom:6px; }
+  .campo input, .campo textarea {
+    width:100%; background:var(--gris-medio); border:1px solid var(--gris-borde);
+    border-radius:10px; padding:12px 16px; color:var(--blanco);
+    font-family:'DM Sans',sans-serif; font-size:15px; outline:none;
+    transition:border-color 0.2s, box-shadow 0.2s;
+  }
+  .campo input:focus, .campo textarea:focus { border-color:var(--dorado); box-shadow:0 0 0 3px rgba(212,160,23,0.15); }
+  .campo input[type="number"] { font-family:'DM Mono',monospace; font-size:16px; }
+  .campo textarea { resize:vertical; min-height:70px; }
+
+  .input-money { position:relative; }
+  .input-money::before { content:'$'; position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--dorado); font-family:'DM Mono',monospace; font-weight:500; font-size:15px; pointer-events:none; }
+  .input-money input { padding-left:30px; }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* CAJERO BADGE */
+  .cajero-badge { background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:10px; }
+  .cajero-badge .avatar { width:36px; height:36px; border-radius:50%; background:rgba(212,160,23,0.2); border:1px solid var(--dorado); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--dorado); flex-shrink:0; }
+  .cajero-badge .nombre { font-weight:600; font-size:15px; }
+  .cajero-badge .sub { font-size:11px; color:var(--blanco-suave); margin-top:1px; }
+
+  /* CANAL BLOCK — igual para todos los canales */
+  .canal-block { background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:12px; padding:16px; margin-bottom:12px; }
+  .canal-block:last-of-type { margin-bottom:0; }
+  .canal-label-top { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px; }
+
+  .diff-inline {
+    display:flex; justify-content:space-between; align-items:center;
+    border-radius:10px; padding:12px 16px; margin-top:10px; transition:all 0.3s;
+  }
+  .diff-inline.ok  { background:rgba(29,185,84,0.12); border:1px solid rgba(29,185,84,0.3); }
+  .diff-inline.mal { background:rgba(230,57,70,0.12);  border:1px solid rgba(230,57,70,0.3); }
+  .diff-inline.neutro { background:rgba(255,255,255,0.04); border:1px solid var(--gris-borde); }
+  .diff-inline .dl { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+  .diff-inline.ok  .dl { color:var(--verde); }
+  .diff-inline.mal .dl { color:var(--rojo); }
+  .diff-inline.neutro .dl { color:var(--blanco-suave); }
+  .diff-inline .dv { font-family:'DM Mono',monospace; font-size:20px; font-weight:500; }
+  .diff-inline.ok  .dv { color:var(--verde); }
+  .diff-inline.mal .dv { color:var(--rojo); }
+  .diff-inline.neutro .dv { color:var(--blanco-suave); }
+
+  /* TOTAL VENTAS */
+  .total-ventas {
+    background:linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.05));
+    border:1px solid rgba(212,160,23,0.4); border-radius:12px;
+    padding:16px 20px; display:flex; justify-content:space-between; align-items:center; margin-top:14px;
+  }
+  .total-ventas .tv-label { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:2px; color:var(--dorado); }
+  .total-ventas .tv-valor { font-family:'DM Mono',monospace; font-size:28px; font-weight:500; color:var(--dorado); }
+
+
+
+  /* GASTOS */
+  .gasto-row { display:grid; grid-template-columns:1fr 120px 36px; gap:8px; align-items:center; margin-bottom:8px; }
+  .gasto-row input { background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:10px; padding:10px 14px; color:var(--blanco); font-family:'DM Sans',sans-serif; font-size:14px; outline:none; width:100%; transition:border-color 0.2s; }
+  .gasto-row input:focus { border-color:var(--dorado); }
+  .gasto-money { position:relative; }
+  .gasto-money::before { content:'$'; position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--dorado); font-size:13px; pointer-events:none; }
+  .gasto-money input { padding-left:24px !important; font-family:'DM Mono',monospace !important; }
+  .btn-del { background:none; border:1px solid var(--gris-borde); color:var(--rojo); border-radius:8px; width:36px; height:40px; cursor:pointer; font-size:18px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .btn-del:hover { background:rgba(230,57,70,0.15); border-color:var(--rojo); }
+  .btn-add { background:none; border:1px dashed var(--gris-borde); color:var(--blanco-suave); border-radius:10px; width:100%; padding:10px; cursor:pointer; font-size:13px; font-family:'DM Sans',sans-serif; transition:all 0.2s; margin-top:4px; }
+  .btn-add:hover { border-color:var(--dorado); color:var(--dorado); }
+  .total-gastos { display:flex; justify-content:space-between; align-items:center; background:rgba(230,57,70,0.1); border:1px solid rgba(230,57,70,0.25); border-radius:10px; padding:12px 16px; margin-top:10px; }
+  .total-gastos .label { font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--rojo); }
+  .total-gastos .valor { font-family:'DM Mono',monospace; font-size:20px; color:var(--rojo); }
+
+  /* BTN */
+  .btn-guardar { width:100%; padding:18px; background:var(--dorado); color:var(--negro); border:none; border-radius:14px; font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; cursor:pointer; transition:all 0.2s; margin-top:8px; }
+  .btn-guardar:hover { background:var(--dorado-claro); transform:translateY(-2px); box-shadow:0 8px 30px rgba(212,160,23,0.4); }
+  .btn-guardar:active { transform:translateY(0); }
+  .btn-guardar:disabled { background:var(--gris-borde); color:var(--blanco-suave); cursor:not-allowed; transform:none; box-shadow:none; }
+
+  .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--negro); border-top-color:transparent; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:8px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:14px; padding:16px 24px; z-index:999; transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); max-width:90vw; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.6); min-width:260px; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .toast.ok { border-color:var(--verde); }
+  .toast.error { border-color:var(--rojo); }
+  .toast-icon { font-size:26px; display:block; margin-bottom:4px; }
+  .toast-msg { color:var(--blanco); font-weight:500; font-size:14px; }
+  .toast-sub { color:var(--blanco-suave); font-size:12px; margin-top:4px; }
+
+  .nota { font-size:11px; color:var(--blanco-suave); padding:8px 12px; background:rgba(255,255,255,0.04); border-radius:8px; margin-top:10px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">BRUNCH<span>CUADRE DIARIO</span></div>
+    <div class="fecha-badge">
+      <strong id="horaActual">--:--</strong>
+      <span id="diaActual">---</span>
+    </div>
+  </header>
+
+  <!-- TURNO -->
+  <div class="seccion">
+    <div class="sec-title"><div class="dot" style="background:var(--dorado);box-shadow:0 0 10px var(--dorado)"></div>DATOS DEL TURNO</div>
+    <div class="campo">
+      <label>Fecha del turno</label>
+      <input type="date" id="fecha" />
+    </div>
+    <div class="campo">
+      <label>Cajero</label>
+      <div class="cajero-badge">
+        <div class="avatar">EV</div>
+        <div>
+          <div class="nombre">EVER</div>
+          <div class="sub">Cajero autorizado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VENTAS POR CANAL -->
+  <div class="seccion">
+    <div class="sec-title"><div class="dot" style="background:var(--verde);box-shadow:0 0 10px var(--verde)"></div>VENTAS POR CANAL</div>
+
+    <!-- EFECTIVO -->
+    <div class="canal-block">
+      <div class="canal-label-top" style="color:var(--verde)">💵 Efectivo</div>
+      <div class="grid2">
+        <div class="campo" style="margin-bottom:0">
+          <label>Al inicio</label>
+          <div class="input-money"><input type="number" id="efInicio" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
+        </div>
+        <div class="campo" style="margin-bottom:0">
+          <label>Al cierre</label>
+          <div class="input-money"><input type="number" id="efCierre" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
+        </div>
+      </div>
+      <div class="diff-inline neutro" id="diffEf">
+        <span class="dl">Efectivo vendido</span>
+        <span class="dv" id="diffEfValor">—</span>
+      </div>
+    </div>
+
+    <!-- TARJETA -->
+    <div class="canal-block">
+      <div class="canal-label-top" style="color:var(--azul)">💳 Tarjeta (débito + crédito)</div>
+      <div class="campo" style="margin-bottom:0">
+        <div class="input-money"><input type="number" id="tarjeta" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
+      </div>
+    </div>
+
+    <!-- TRANSFERENCIAS -->
+    <div class="canal-block">
+      <div class="canal-label-top" style="color:var(--naranja)">📱 Transferencias / Apps</div>
+      <div class="grid2">
+        <div class="campo" style="margin-bottom:0">
+          <label>JEPFaster</label>
+          <div class="input-money"><input type="number" id="jep" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
+        </div>
+        <div class="campo" style="margin-bottom:0">
+          <label>De Una / Pichincha</label>
+          <div class="input-money"><input type="number" id="deuna" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="total-ventas">
+      <span class="tv-label">TOTAL VENTAS DEL DÍA</span>
+      <span class="tv-valor" id="totalVentas">$0.00</span>
+    </div>
+  </div>
+
+  <!-- GASTOS -->
+  <div class="seccion">
+    <div class="sec-title"><div class="dot" style="background:var(--rojo);box-shadow:0 0 10px var(--rojo)"></div>GASTOS DEL DÍA</div>
+    <div id="gastosContainer"></div>
+    <button class="btn-add" onclick="addGasto()">+ Agregar gasto</button>
+    <div class="total-gastos">
+      <span class="label">Total Gastos</span>
+      <span class="valor" id="totalGastos">$0.00</span>
+    </div>
+  </div>
+
+  <!-- OBSERVACIONES -->
+  <div class="seccion">
+    <div class="sec-title"><div class="dot" style="background:var(--blanco-suave)"></div>OBSERVACIONES</div>
+    <div class="campo">
+      <textarea id="observaciones" placeholder="Incidentes, novedades, comentarios del turno..."></textarea>
+    </div>
+  </div>
+
+  <button class="btn-guardar" id="btnGuardar" onclick="guardarCuadre()">GUARDAR CUADRE DEL DÍA</button>
+</div>
+
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">✅</span>
+  <div class="toast-msg" id="toastMsg"></div>
+  <div class="toast-sub" id="toastSub"></div>
+</div>
+
+<script>
+const SHEET_ID = '1jPEfIWDWmBQNsQk0d37mksVhWZbnIfj6evYupMsY914';
+const SHEET_NAME = 'REGISTROS';
+const CAJERO = 'EVER';
+
+window.onload = () => {
+  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+  addGasto();
+  actualizarReloj();
+  setInterval(actualizarReloj, 1000);
+};
+
+function actualizarReloj() {
+  const now = new Date();
+  document.getElementById('horaActual').textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('diaActual').textContent = `${dias[now.getDay()]} ${now.getDate()} ${meses[now.getMonth()]}`;
+}
+
+function n(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+
+function calcTotales() {
+  const efInicio = n('efInicio');
+  const efCierre = n('efCierre');
+  const efVendido = efCierre - efInicio;
+
+  // Diff efectivo
+  const el = document.getElementById('diffEf');
+  const vl = document.getElementById('diffEfValor');
+  if (!document.getElementById('efCierre').value && !document.getElementById('efInicio').value) {
+    el.className = 'diff-inline neutro'; vl.textContent = '—';
+  } else {
+    vl.textContent = (efVendido >= 0 ? '+' : '-') + '$' + Math.abs(efVendido).toFixed(2);
+    el.className = 'diff-inline ' + (efVendido >= 0 ? 'ok' : 'mal');
+  }
+
+  const transfer = n('jep') + n('deuna');
+  const total = efVendido + n('tarjeta') + transfer;
+  document.getElementById('totalVentas').textContent = '$' + Math.max(total, 0).toFixed(2);
+}
+
+function calcGastos() {
+  let t = 0;
+  document.querySelectorAll('.gasto-monto').forEach(el => t += parseFloat(el.value) || 0);
+  document.getElementById('totalGastos').textContent = '$' + t.toFixed(2);
+}
+
+let gastoIds = [];
+function addGasto() {
+  const id = Date.now();
+  gastoIds.push(id);
+  const div = document.createElement('div');
+  div.className = 'gasto-row'; div.id = 'g' + id;
+  div.innerHTML = `
+    <input type="text" placeholder="Descripción..." />
+    <div class="gasto-money"><input type="number" min="0" step="0.01" placeholder="0.00" class="gasto-monto" oninput="calcGastos()" /></div>
+    <button class="btn-del" onclick="removeGasto(${id})">×</button>`;
+  document.getElementById('gastosContainer').appendChild(div);
+}
+function removeGasto(id) {
+  document.getElementById('g'+id)?.remove();
+  gastoIds = gastoIds.filter(x => x !== id);
+  calcGastos();
+}
+
+async function guardarCuadre() {
+  const fecha = document.getElementById('fecha').value;
+  if (!fecha) { showToast('error','⚠️','Falta la fecha',''); return; }
+
+  const efInicio  = n('efInicio');
+  const efCierre  = n('efCierre');
+  const efVendido = efCierre - efInicio;
+  const tarjeta   = n('tarjeta');
+  const jep       = n('jep');
+  const deuna     = n('deuna');
+  const transfer  = jep + deuna;
+  const totalV    = Math.max(efVendido + tarjeta + transfer, 0);
+
+  const gastosData = [];
+  document.querySelectorAll('.gasto-row').forEach(row => {
+    const desc  = row.querySelector('input[type="text"]')?.value?.trim() || '';
+    const monto = parseFloat(row.querySelector('.gasto-monto')?.value) || 0;
+    if (desc || monto > 0) gastosData.push([desc, monto]);
+  });
+  const totalG = gastosData.reduce((s,[,v]) => s+v, 0);
+  const obs = document.getElementById('observaciones').value.trim();
+  const ts  = new Date().toISOString();
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const diaSem = dias[new Date(fecha + 'T12:00:00').getDay()];
+
+  // Columnas: FECHA | DIA | CAJERO | EF_INICIO | EF_CIERRE | EF_VENDIDO | TARJETA | JEP | DEUNA | TRANSFERENCIAS | TOTAL_VENTAS | G1D|G1V|G2D|G2V|G3D|G3V|G4D|G4V|G5D|G5V | TOTAL_GASTOS | OBS | TIMESTAMP
+  const fila = [
+    fecha, diaSem, CAJERO,
+    efInicio, efCierre, efVendido,
+    tarjeta, jep, deuna, transfer, totalV,
+    gastosData[0]?.[0]||'', gastosData[0]?.[1]||0,
+    gastosData[1]?.[0]||'', gastosData[1]?.[1]||0,
+    gastosData[2]?.[0]||'', gastosData[2]?.[1]||0,
+    gastosData[3]?.[0]||'', gastosData[3]?.[1]||0,
+    gastosData[4]?.[0]||'', gastosData[4]?.[1]||0,
+    totalG, obs, ts
+  ];
+
+  const btn = document.getElementById('btnGuardar');
+  btn.innerHTML = '<span class="spinner"></span>GUARDANDO...';
+  btn.disabled = true;
+
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+    const resp = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ values:[fila] })
+    });
+    if (resp.ok) {
+      showToast('ok','✅','Cuadre guardado', `Ventas $${totalV.toFixed(2)} · Gastos $${totalG.toFixed(2)}`);
+      limpiar();
+    } else {
+      guardarLocal(fila, totalV, totalG);
+    }
+  } catch(e) {
+    guardarLocal(fila, totalV, totalG);
+  }
+
+  btn.innerHTML = 'GUARDAR CUADRE DEL DÍA';
+  btn.disabled = false;
+}
+
+function guardarLocal(fila, totalV, totalG) {
+  const r = JSON.parse(localStorage.getItem('brunch_registros') || '[]');
+  r.push(fila);
+  localStorage.setItem('brunch_registros', JSON.stringify(r));
+  showToast('ok','💾','Guardado localmente', `Ventas $${totalV.toFixed(2)} · ${r.length} registros`);
+  limpiar();
+}
+
+function limpiar() {
+  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+  ['efInicio','efCierre','tarjeta','jep','deuna','observaciones'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('gastosContainer').innerHTML = '';
+  gastoIds = [];
+  addGasto();
+  calcTotales(); calcGastos();
+}
+
+function showToast(tipo, icon, msg, sub) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastSub').textContent = sub;
+  t.className = 'toast show ' + tipo;
+  setTimeout(() => t.className = 'toast ' + tipo, 4000);
+}
+</script>
+</body>
+</html>
