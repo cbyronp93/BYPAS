@@ -354,18 +354,14 @@ async function guardarCuadre() {
   btn.disabled = true;
 
   try {
-    const resp = await fetch('https://script.google.com/macros/s/AKfycbwXxGnYR7l5ZCR_kuYSVTr2i9yVewBf1gCpl6Mn0d71lztnGCO4h5N9vnZIQQCfVRnA/exec', {
+    await fetch('https://script.google.com/macros/s/AKfycbwXxGnYR7l5ZCR_kuYSVTr2i9yVewBf1gCpl6Mn0d71lztnGCO4h5N9vnZIQQCfVRnA/exec', {
       method: 'POST',
+      mode: 'no-cors',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ hoja: 'REGISTROS', values: fila })
     });
-    const json = await resp.json();
-    if (json.status === 'ok') {
-      showToast('ok','✅','Cuadre guardado', `Ventas $${totalV.toFixed(2)} · Gastos $${totalG.toFixed(2)}`);
-      limpiar();
-    } else {
-      guardarLocal(fila, totalV, totalG);
-    }
+    showToast('ok','✅','Cuadre guardado', `Ventas $${totalV.toFixed(2)} · Gastos $${totalG.toFixed(2)}`);
+    limpiar();
   } catch(e) {
     guardarLocal(fila, totalV, totalG);
   }
