@@ -184,6 +184,7 @@
           <div class="input-money"><input type="number" id="efCierre" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
         </div>
       </div>
+      <div class="nota" id="efInicioHint" style="display:none;margin-top:8px"></div>
       <div class="diff-inline neutro" id="diffEf">
         <span class="dl">Efectivo vendido</span>
         <span class="dv" id="diffEfValor">—</span>
@@ -249,13 +250,53 @@
 
 <script>
 const CAJERO = 'EVER';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzef6oRQJTb7cR3nTD-ATqvYJnusl3Jn3Ug4ppMNUcx4tC6VZ_pWLxjTpx5n2slCr83/exec';
 
 window.onload = () => {
   document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
   addGasto();
   actualizarReloj();
   setInterval(actualizarReloj, 1000);
+  prefillEfectivoInicial();
 };
+
+// ── Leer una hoja del Sheet vía JSONP (mismo contrato que el Admin) ──
+function leerHoja(hoja) {
+  return new Promise(resolve => {
+    const cb = 'cb_' + hoja + '_' + Date.now();
+    const s  = document.createElement('script');
+    const t  = setTimeout(() => { delete window[cb]; s.remove(); resolve(null); }, 10000);
+    window[cb] = data => {
+      clearTimeout(t); delete window[cb]; s.remove();
+      resolve(data && data.status === 'ok' ? data.values : null);
+    };
+    s.src = SCRIPT_URL + '?hoja=' + encodeURIComponent(hoja) + '&callback=' + cb;
+    s.onerror = () => { clearTimeout(t); delete window[cb]; s.remove(); resolve(null); };
+    document.head.appendChild(s);
+  });
+}
+
+// ── Prellena "Efectivo al inicio" con el "Efectivo al cierre" de la última noche ──
+async function prefillEfectivoInicial() {
+  const hint = document.getElementById('efInicioHint');
+  const inp  = document.getElementById('efInicio');
+  try {
+    const rows = await leerHoja('REGISTROS');
+    // fila 0 = título, fila 1 = encabezados, fila 2+ = datos
+    const data = (rows || []).slice(2).filter(r => r && r[0]);
+    if (!data.length) return;
+    const last     = data[data.length - 1];
+    const efCierre = parseFloat(last[4]) || 0;   // col 4 = EF_CIERRE
+    const fechaAnt = String(last[0] || '').slice(0, 10);
+    // Solo prellenar si el usuario no escribió nada aún
+    if (!inp.value) inp.value = efCierre.toFixed(2);
+    hint.style.display = 'block';
+    hint.innerHTML = `↩ Prellenado con el <b style="color:var(--dorado)">efectivo al cierre</b> de la última noche` +
+                     (fechaAnt ? ` (${fechaAnt})` : '') +
+                     `: <b style="color:var(--dorado)">$${efCierre.toFixed(2)}</b>. Puedes editarlo si es necesario.`;
+    calcTotales();
+  } catch (e) { /* sin conexión: se deja vacío para ingreso manual */ }
+}
 
 function actualizarReloj() {
   const now = new Date();
