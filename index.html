@@ -1,443 +1,311 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BRUNCH — Cajero</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ficha de Avalúo — Colegio Borja</title>
+<meta name="description" content="Ficha interactiva para inspeccionar casas del sector Colegio Borja (Baños, Cuenca) y calcular el valor en sitio — ALTIA Inmobiliaria.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-  :root {
-    --negro: #0a0a0f;
-    --dorado: #d4a017;
-    --dorado-claro: #f0bc30;
-    --gris-oscuro: #141418;
-    --gris-medio: #1e1e26;
-    --gris-borde: #2a2a36;
-    --blanco: #f0ede6;
-    --blanco-suave: #c8c4bb;
-    --verde: #1db954;
-    --rojo: #e63946;
-    --azul: #3a86ff;
-    --naranja: #f4a261;
+  html{color-scheme:light dark}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+  :root{
+    --ground:#F1EFEA; --surface:#FFFFFF; --surface-2:#FAF8F3; --field:#FFFFFF;
+    --ink:#15203A; --muted:#59637A; --faint:#8A93A5;
+    --line:#E3E0D7; --line-strong:#CFCabd;
+    --navy:#1E3A5F; --navy-deep:#152A43;
+    --gold:#A67C1E; --gold-line:#C8A23C; --gold-soft:#F4ECD5;
+    --good:#2E7048; --good-soft:#E4EFE7;
+    --warn:#9A5B12; --warn-soft:#F7EBD8;
+    --bad:#A23B2E; --bad-soft:#F6E3DF;
+    --shadow:0 1px 2px rgba(21,32,58,.05), 0 6px 22px rgba(21,32,58,.07);
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--negro); color:var(--blanco); font-family:'DM Sans',sans-serif; min-height:100vh; }
-  body::before {
-    content:''; position:fixed; inset:0; z-index:0;
-    background:
-      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(212,160,23,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(58,134,255,0.05) 0%, transparent 50%),
-      repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(255,255,255,0.015) 80px),
-      repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(255,255,255,0.015) 80px);
-    pointer-events:none;
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --ground:#0E131C; --surface:#151B27; --surface-2:#1A2130; --field:#1E2634;
+    --ink:#ECEAE1; --muted:#9AA3B4; --faint:#6E7789;
+    --line:#28303F; --line-strong:#3A4353;
+    --navy:#7AA6DB; --navy-deep:#A9C6EC;
+    --gold:#D9B65A; --gold-line:#B99236; --gold-soft:#2A2413;
+    --good:#6FB98A; --good-soft:#1C2A21; --warn:#D6A15C; --warn-soft:#2A2113;
+    --bad:#E08472; --bad-soft:#2E1A16;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 26px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="dark"]{
+    --ground:#0E131C; --surface:#151B27; --surface-2:#1A2130; --field:#1E2634;
+    --ink:#ECEAE1; --muted:#9AA3B4; --faint:#6E7789;
+    --line:#28303F; --line-strong:#3A4353;
+    --navy:#7AA6DB; --navy-deep:#A9C6EC;
+    --gold:#D9B65A; --gold-line:#B99236; --gold-soft:#2A2413;
+    --good:#6FB98A; --good-soft:#1C2A21; --warn:#D6A15C; --warn-soft:#2A2113;
+    --bad:#E08472; --bad-soft:#2E1A16;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 26px rgba(0,0,0,.4);
   }
-  .wrap { position:relative; z-index:1; max-width:580px; margin:0 auto; padding:0 16px 60px; }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ground); color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif; line-height:1.45; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px; margin:0 auto; padding:20px 16px 60px}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
 
-  header {
-    padding:28px 0 20px; display:flex; align-items:center; justify-content:space-between;
-    border-bottom:1px solid var(--gris-borde); margin-bottom:28px;
-  }
-  .logo { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:4px; color:var(--dorado); line-height:1; }
-  .logo span { color:var(--blanco); font-size:13px; font-family:'DM Sans'; letter-spacing:2px; display:block; margin-top:2px; font-weight:300; }
-  .fecha-badge { background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:8px; padding:8px 16px; font-family:'DM Mono',monospace; font-size:13px; color:var(--blanco-suave); text-align:right; }
-  .fecha-badge strong { display:block; color:var(--dorado); font-size:15px; }
+  .brand{display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding-bottom:12px}
+  .brand .mark{font-family:"Newsreader",serif; font-weight:600; letter-spacing:.26em; font-size:13px; color:var(--navy)}
+  .brand .mark b{color:var(--gold)}
+  .brand .meta{font-size:11px; color:var(--faint); text-align:right}
 
-  .seccion { background:var(--gris-oscuro); border:1px solid var(--gris-borde); border-radius:16px; padding:24px; margin-bottom:14px; transition:border-color 0.2s; }
-  .seccion:hover { border-color:rgba(212,160,23,0.3); }
-  .sec-title { font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:3px; color:var(--dorado); margin-bottom:18px; display:flex; align-items:center; gap:10px; }
-  .sec-title .dot { width:8px; height:8px; border-radius:50%; }
+  h1{font-family:"Newsreader",serif; font-weight:500; font-size:clamp(22px,5vw,30px); margin:16px 0 4px; letter-spacing:-.01em}
+  .lede{color:var(--muted); font-size:13px; margin:0 0 4px; max-width:56ch}
 
-  .campo { margin-bottom:14px; }
-  .campo label { display:block; font-size:11px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--blanco-suave); margin-bottom:6px; }
-  .campo input, .campo textarea {
-    width:100%; background:var(--gris-medio); border:1px solid var(--gris-borde);
-    border-radius:10px; padding:12px 16px; color:var(--blanco);
-    font-family:'DM Sans',sans-serif; font-size:15px; outline:none;
-    transition:border-color 0.2s, box-shadow 0.2s;
-  }
-  .campo input:focus, .campo textarea:focus { border-color:var(--dorado); box-shadow:0 0 0 3px rgba(212,160,23,0.15); }
-  .campo input[type="number"] { font-family:'DM Mono',monospace; font-size:16px; }
-  .campo textarea { resize:vertical; min-height:70px; }
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:16px; margin-top:16px}
+  .card > h2{font-family:"Newsreader",serif; font-weight:500; font-size:17px; margin:0 0 2px; display:flex; align-items:center; gap:8px}
+  .card > .hint{color:var(--faint); font-size:11.5px; margin:0 0 12px}
+  .snum{font-family:"IBM Plex Mono",monospace; font-size:11px; color:#fff; background:var(--gold); border-radius:6px; padding:2px 6px}
 
-  .input-money { position:relative; }
-  .input-money::before { content:'$'; position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--dorado); font-family:'DM Mono',monospace; font-weight:500; font-size:15px; pointer-events:none; }
-  .input-money input { padding-left:30px; }
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px 12px}
+  .full{grid-column:1 / -1}
+  label{display:block; font-size:11px; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:4px}
+  input, select, textarea{width:100%; font-family:inherit; font-size:16px; color:var(--ink); background:var(--field);
+    border:1px solid var(--line-strong); border-radius:9px; padding:10px 11px; -webkit-appearance:none; appearance:none}
+  input:focus, select:focus, textarea:focus{outline:2px solid var(--gold-line); outline-offset:1px; border-color:var(--gold-line)}
+  .unit{position:relative}
+  .unit input{padding-right:38px}
+  .unit .u{position:absolute; right:11px; top:50%; transform:translateY(-50%); color:var(--faint); font-size:12px; pointer-events:none}
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%); background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%; background-size:5px 5px,5px 5px; background-repeat:no-repeat}
+  textarea{min-height:66px; resize:vertical; line-height:1.4}
 
-  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .result{background:var(--navy); color:#fff; border-radius:14px; padding:18px; margin-top:16px; box-shadow:var(--shadow)}
+  :root:not([data-theme="light"]) .result{background:var(--surface-2); border:1px solid var(--gold-line)}
+  .result .lab{font-size:11px; letter-spacing:.14em; text-transform:uppercase; opacity:.85}
+  :root:not([data-theme="light"]) .result .lab{color:var(--muted); opacity:1}
+  .result .big{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:clamp(28px,8vw,42px); line-height:1.05; margin-top:2px}
+  :root:not([data-theme="light"]) .result .big{color:var(--gold)}
+  .result .rng{font-size:12.5px; opacity:.85; margin-top:4px}
+  :root:not([data-theme="light"]) .result .rng{color:var(--muted); opacity:1}
+  .rrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+  .rr{flex:1; min-width:120px; background:rgba(255,255,255,.1); border-radius:9px; padding:9px 11px}
+  :root:not([data-theme="light"]) .rr{background:var(--surface); border:1px solid var(--line)}
+  .rr .k{font-size:10px; letter-spacing:.05em; text-transform:uppercase; opacity:.8}
+  :root:not([data-theme="light"]) .rr .k{color:var(--faint); opacity:1}
+  .rr .v{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:16px; margin-top:2px}
 
-  /* CAJERO BADGE */
-  .cajero-badge { background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:10px; }
-  .cajero-badge .avatar { width:36px; height:36px; border-radius:50%; background:rgba(212,160,23,0.2); border:1px solid var(--dorado); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--dorado); flex-shrink:0; }
-  .cajero-badge .nombre { font-weight:600; font-size:15px; }
-  .cajero-badge .sub { font-size:11px; color:var(--blanco-suave); margin-top:1px; }
+  .verdict{margin-top:14px; border-radius:10px; padding:11px 14px; font-size:13.5px; font-weight:500; display:flex; gap:9px; align-items:flex-start}
+  .verdict .dot{width:10px; height:10px; border-radius:50%; margin-top:5px; flex:none}
+  .v-good{background:var(--good-soft); color:var(--good)} .v-good .dot{background:var(--good)}
+  .v-warn{background:var(--warn-soft); color:var(--warn)} .v-warn .dot{background:var(--warn)}
+  .v-bad{background:var(--bad-soft); color:var(--bad)} .v-bad .dot{background:var(--bad)}
+  .v-none{background:var(--surface-2); color:var(--muted)} .v-none .dot{background:var(--faint)}
 
-  /* CANAL BLOCK — igual para todos los canales */
-  .canal-block { background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:12px; padding:16px; margin-bottom:12px; }
-  .canal-block:last-of-type { margin-bottom:0; }
-  .canal-label-top { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px; }
+  .brk{margin-top:12px; font-size:12.5px; color:var(--muted)}
+  .brk div{display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dashed var(--line)}
+  .brk div:last-child{border-bottom:0}
+  .brk .mono{color:var(--ink)}
 
-  .diff-inline {
-    display:flex; justify-content:space-between; align-items:center;
-    border-radius:10px; padding:12px 16px; margin-top:10px; transition:all 0.3s;
-  }
-  .diff-inline.ok  { background:rgba(29,185,84,0.12); border:1px solid rgba(29,185,84,0.3); }
-  .diff-inline.mal { background:rgba(230,57,70,0.12);  border:1px solid rgba(230,57,70,0.3); }
-  .diff-inline.neutro { background:rgba(255,255,255,0.04); border:1px solid var(--gris-borde); }
-  .diff-inline .dl { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
-  .diff-inline.ok  .dl { color:var(--verde); }
-  .diff-inline.mal .dl { color:var(--rojo); }
-  .diff-inline.neutro .dl { color:var(--blanco-suave); }
-  .diff-inline .dv { font-family:'DM Mono',monospace; font-size:20px; font-weight:500; }
-  .diff-inline.ok  .dv { color:var(--verde); }
-  .diff-inline.mal .dv { color:var(--rojo); }
-  .diff-inline.neutro .dv { color:var(--blanco-suave); }
+  .ref{background:var(--gold-soft); border:1px solid var(--gold-line); border-radius:10px; padding:11px 13px; font-size:12px; color:var(--ink); margin-top:12px}
+  .ref b{color:var(--gold)}
 
-  /* TOTAL VENTAS */
-  .total-ventas {
-    background:linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.05));
-    border:1px solid rgba(212,160,23,0.4); border-radius:12px;
-    padding:16px 20px; display:flex; justify-content:space-between; align-items:center; margin-top:14px;
-  }
-  .total-ventas .tv-label { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:2px; color:var(--dorado); }
-  .total-ventas .tv-valor { font-family:'DM Mono',monospace; font-size:28px; font-weight:500; color:var(--dorado); }
+  .chk{display:grid; grid-template-columns:1fr; gap:2px}
+  .chk label{display:flex; align-items:flex-start; gap:9px; text-transform:none; letter-spacing:0; font-weight:400; font-size:13.5px;
+    color:var(--ink); padding:8px 6px; border-radius:8px; margin:0; cursor:pointer}
+  .chk label:hover{background:var(--surface-2)}
+  .chk input{width:19px; height:19px; margin:1px 0 0; accent-color:var(--gold); flex:none}
+  .chk .sub{display:block; font-size:11.5px; color:var(--faint); margin-top:1px}
+  .grp-t{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); font-weight:700; margin:12px 0 2px}
+  .grp-t:first-child{margin-top:0}
 
-
-
-  /* GASTOS */
-  .gasto-row { display:grid; grid-template-columns:1fr 120px 36px; gap:8px; align-items:center; margin-bottom:8px; }
-  .gasto-row input { background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:10px; padding:10px 14px; color:var(--blanco); font-family:'DM Sans',sans-serif; font-size:14px; outline:none; width:100%; transition:border-color 0.2s; }
-  .gasto-row input:focus { border-color:var(--dorado); }
-  .gasto-money { position:relative; }
-  .gasto-money::before { content:'$'; position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--dorado); font-size:13px; pointer-events:none; }
-  .gasto-money input { padding-left:24px !important; font-family:'DM Mono',monospace !important; }
-  .btn-del { background:none; border:1px solid var(--gris-borde); color:var(--rojo); border-radius:8px; width:36px; height:40px; cursor:pointer; font-size:18px; transition:all 0.2s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .btn-del:hover { background:rgba(230,57,70,0.15); border-color:var(--rojo); }
-  .btn-add { background:none; border:1px dashed var(--gris-borde); color:var(--blanco-suave); border-radius:10px; width:100%; padding:10px; cursor:pointer; font-size:13px; font-family:'DM Sans',sans-serif; transition:all 0.2s; margin-top:4px; }
-  .btn-add:hover { border-color:var(--dorado); color:var(--dorado); }
-  .total-gastos { display:flex; justify-content:space-between; align-items:center; background:rgba(230,57,70,0.1); border:1px solid rgba(230,57,70,0.25); border-radius:10px; padding:12px 16px; margin-top:10px; }
-  .total-gastos .label { font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--rojo); }
-  .total-gastos .valor { font-family:'DM Mono',monospace; font-size:20px; color:var(--rojo); }
-
-  /* BTN */
-  .btn-guardar { width:100%; padding:18px; background:var(--dorado); color:var(--negro); border:none; border-radius:14px; font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; cursor:pointer; transition:all 0.2s; margin-top:8px; }
-  .btn-guardar:hover { background:var(--dorado-claro); transform:translateY(-2px); box-shadow:0 8px 30px rgba(212,160,23,0.4); }
-  .btn-guardar:active { transform:translateY(0); }
-  .btn-guardar:disabled { background:var(--gris-borde); color:var(--blanco-suave); cursor:not-allowed; transform:none; box-shadow:none; }
-
-  .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--negro); border-top-color:transparent; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:8px; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-
-  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--gris-medio); border:1px solid var(--gris-borde); border-radius:14px; padding:16px 24px; z-index:999; transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); max-width:90vw; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.6); min-width:260px; }
-  .toast.show { transform:translateX(-50%) translateY(0); }
-  .toast.ok { border-color:var(--verde); }
-  .toast.error { border-color:var(--rojo); }
-  .toast-icon { font-size:26px; display:block; margin-bottom:4px; }
-  .toast-msg { color:var(--blanco); font-weight:500; font-size:14px; }
-  .toast-sub { color:var(--blanco-suave); font-size:12px; margin-top:4px; }
-
-  .nota { font-size:11px; color:var(--blanco-suave); padding:8px 12px; background:rgba(255,255,255,0.04); border-radius:8px; margin-top:10px; line-height:1.5; }
+  .btns{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap}
+  button{font-family:inherit; font-size:14px; font-weight:600; border-radius:10px; padding:11px 16px; border:1px solid var(--line-strong);
+    background:var(--surface); color:var(--ink); cursor:pointer}
+  button.primary{background:var(--navy); color:#fff; border-color:var(--navy)}
+  :root:not([data-theme="light"]) button.primary{background:var(--gold); color:#111; border-color:var(--gold)}
+  button:active{transform:translateY(1px)}
+  .saved{font-size:11.5px; color:var(--good); align-self:center}
+  footer{margin-top:24px; color:var(--faint); font-size:11px; text-align:center; line-height:1.5}
+  @media print{.btns,.brand .meta{display:none} body{background:#fff}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="logo">BRUNCH<span>CUADRE DIARIO</span></div>
-    <div class="fecha-badge">
-      <strong id="horaActual">--:--</strong>
-      <span id="diaActual">---</span>
-    </div>
-  </header>
+  <div class="brand">
+    <div class="mark">ALT<b>I</b>A</div>
+    <div class="meta">Ficha de avalúo en sitio<br>Sector Colegio Borja · Baños, Cuenca</div>
+  </div>
 
-  <!-- TURNO -->
-  <div class="seccion">
-    <div class="sec-title"><div class="dot" style="background:var(--dorado);box-shadow:0 0 10px var(--dorado)"></div>DATOS DEL TURNO</div>
-    <div class="campo">
-      <label>Fecha del turno</label>
-      <input type="date" id="fecha" />
-    </div>
-    <div class="campo">
-      <label>Cajero</label>
-      <div class="cajero-badge">
-        <div class="avatar">EV</div>
-        <div>
-          <div class="nombre">EVER</div>
-          <div class="sub">Cajero autorizado</div>
-        </div>
-      </div>
+  <h1>Ficha de Avalúo en Sitio</h1>
+  <p class="lede">Llénala durante la visita. El valor estimado se calcula solo con las tarifas del sector. Ajusta los $/m² según lo que veas.</p>
+
+  <div class="card">
+    <h2><span class="snum">1</span> Datos de la propiedad</h2>
+    <p class="hint">Toma las áreas de la escritura o el informe predial cuando puedas confirmarlas.</p>
+    <div class="grid">
+      <div class="full"><label>Dirección / referencia</label><input id="dir" type="text" placeholder="Ej. Av. 1ero de Mayo y Felipe II"></div>
+      <div class="unit"><label>Área de terreno</label><input id="ter" type="number" inputmode="decimal" placeholder="0"><span class="u">m²</span></div>
+      <div class="unit"><label>Área de construcción</label><input id="con" type="number" inputmode="decimal" placeholder="0"><span class="u">m²</span></div>
+      <div><label>Año de construcción</label><input id="anio" type="number" inputmode="numeric" placeholder="Ej. 2017"></div>
+      <div><label>Niveles / pisos</label><input id="niv" type="number" inputmode="numeric" placeholder="Ej. 3"></div>
+      <div><label>Dormitorios</label><input id="dorm" type="number" inputmode="numeric" placeholder="0"></div>
+      <div><label>Baños</label><input id="ban" type="number" inputmode="decimal" placeholder="0"></div>
+      <div class="unit full"><label>Precio pedido (opcional)</label><input id="ped" type="number" inputmode="decimal" placeholder="0"><span class="u">$</span></div>
     </div>
   </div>
 
-  <!-- VENTAS POR CANAL -->
-  <div class="seccion">
-    <div class="sec-title"><div class="dot" style="background:var(--verde);box-shadow:0 0 10px var(--verde)"></div>VENTAS POR CANAL</div>
-
-    <!-- EFECTIVO -->
-    <div class="canal-block">
-      <div class="canal-label-top" style="color:var(--verde)">💵 Efectivo</div>
-      <div class="grid2">
-        <div class="campo" style="margin-bottom:0">
-          <label>Al inicio</label>
-          <div class="input-money"><input type="number" id="efInicio" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
-        </div>
-        <div class="campo" style="margin-bottom:0">
-          <label>Al cierre</label>
-          <div class="input-money"><input type="number" id="efCierre" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
-        </div>
+  <div class="card">
+    <h2><span class="snum">2</span> Tarifas de valoración</h2>
+    <p class="hint">Precargadas para el sector. Súbelas o bájalas según ubicación exacta y estado real.</p>
+    <div class="grid">
+      <div><label>Estado de la construcción</label>
+        <select id="estado">
+          <option value="650">Nuevo / Muy bueno — $650/m²</option>
+          <option value="600" selected>Bueno — $600/m²</option>
+          <option value="520">Regular — $520/m²</option>
+          <option value="430">Malo / antiguo — $430/m²</option>
+        </select>
       </div>
-      <div class="nota" id="efInicioHint" style="display:none;margin-top:8px"></div>
-      <div class="diff-inline neutro" id="diffEf">
-        <span class="dl">Efectivo vendido</span>
-        <span class="dv" id="diffEfValor">—</span>
-      </div>
+      <div class="unit"><label>$/m² construcción</label><input id="rcon" type="number" inputmode="decimal" value="600"><span class="u">/m²</span></div>
+      <div class="unit full"><label>$/m² terreno <span style="text-transform:none;font-weight:400;color:var(--faint)">(sector: $200–$350; lote chico → más alto)</span></label><input id="rter" type="number" inputmode="decimal" value="300"><span class="u">/m²</span></div>
     </div>
+    <div class="ref">📊 <b>Referencia del sector (Colegio Borja / Baños):</b> casas se venden a $647–$983/m² construido (mediana ~$820, incluye terreno). Terreno urbano $200–$350/m²; rural (La Unión) $140–$180.</div>
+  </div>
 
-    <!-- TARJETA -->
-    <div class="canal-block">
-      <div class="canal-label-top" style="color:var(--azul)">💳 Tarjeta (débito + crédito)</div>
-      <div class="campo" style="margin-bottom:0">
-        <div class="input-money"><input type="number" id="tarjeta" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
-      </div>
+  <div class="result">
+    <div class="lab">Valor de mercado estimado</div>
+    <div class="big" id="rTotal">$0</div>
+    <div class="rng" id="rRange">Rango: —</div>
+    <div class="rrow">
+      <div class="rr"><div class="k">$/m² construido</div><div class="v" id="rPerM2">—</div></div>
+      <div class="rr"><div class="k">Terreno</div><div class="v mono" id="rTer">$0</div></div>
+      <div class="rr"><div class="k">Construcción</div><div class="v mono" id="rCon">$0</div></div>
     </div>
-
-    <!-- TRANSFERENCIAS -->
-    <div class="canal-block">
-      <div class="canal-label-top" style="color:var(--naranja)">📱 Transferencias / Apps</div>
-      <div class="grid2">
-        <div class="campo" style="margin-bottom:0">
-          <label>JEPFaster</label>
-          <div class="input-money"><input type="number" id="jep" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
-        </div>
-        <div class="campo" style="margin-bottom:0">
-          <label>De Una / Pichincha</label>
-          <div class="input-money"><input type="number" id="deuna" min="0" step="0.01" placeholder="0.00" oninput="calcTotales()" /></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="total-ventas">
-      <span class="tv-label">TOTAL VENTAS DEL DÍA</span>
-      <span class="tv-valor" id="totalVentas">$0.00</span>
+    <div class="verdict v-none" id="verdict"><span class="dot"></span><span id="verdictTxt">Ingresa las áreas para calcular.</span></div>
+    <div class="brk" id="brk" hidden>
+      <div><span>Terreno · <span id="bTerA">0</span> m² × <span id="bTerR">$0</span></span><span class="mono" id="bTerV">$0</span></div>
+      <div><span>Construcción · <span id="bConA">0</span> m² × <span id="bConR">$0</span></span><span class="mono" id="bConV">$0</span></div>
+      <div><span><b>Total estimado</b></span><span class="mono" id="bTot">$0</span></div>
+      <div id="bOfferRow" hidden><span>Oferta sugerida para arrancar</span><span class="mono" id="bOffer">$0</span></div>
     </div>
   </div>
 
-  <!-- GASTOS -->
-  <div class="seccion">
-    <div class="sec-title"><div class="dot" style="background:var(--rojo);box-shadow:0 0 10px var(--rojo)"></div>GASTOS DEL DÍA</div>
-    <div id="gastosContainer"></div>
-    <button class="btn-add" onclick="addGasto()">+ Agregar gasto</button>
-    <div class="total-gastos">
-      <span class="label">Total Gastos</span>
-      <span class="valor" id="totalGastos">$0.00</span>
+  <div class="card">
+    <h2><span class="snum">3</span> Checklist de inspección</h2>
+    <p class="hint">Marca lo que esté OK. Lo que falte, castiga el $/m² o negocia.</p>
+    <div class="chk" id="chk">
+      <div class="grp-t">Estructura y obra</div>
+      <label><input type="checkbox"><span>Estructura sin fisuras estructurales <span class="sub">columnas, vigas, losas</span></span></label>
+      <label><input type="checkbox"><span>Sin humedad / filtraciones <span class="sub">paredes, cubierta, sótano</span></span></label>
+      <label><input type="checkbox"><span>Cubierta y bajantes en buen estado</span></label>
+      <div class="grp-t">Acabados</div>
+      <label><input type="checkbox"><span>Pisos en buen estado <span class="sub">porcelanato / flotante / cerámica</span></span></label>
+      <label><input type="checkbox"><span>Baños completos y funcionales</span></label>
+      <label><input type="checkbox"><span>Cocina con mueble e instalaciones</span></label>
+      <label><input type="checkbox"><span>Ventanas de aluminio/vidrio, sin roturas</span></label>
+      <label><input type="checkbox"><span>Puertas y closets en buen estado</span></label>
+      <div class="grp-t">Instalaciones y servicios</div>
+      <label><input type="checkbox"><span>Instalación eléctrica en orden <span class="sub">tablero, tomas, sin cables sueltos</span></span></label>
+      <label><input type="checkbox"><span>Agua potable y presión OK</span></label>
+      <label><input type="checkbox"><span>Alcantarillado / desagües sin problemas</span></label>
+      <label><input type="checkbox"><span>Estacionamiento propio</span></label>
+      <div class="grp-t">Legal (clave para el precio)</div>
+      <label><input type="checkbox"><span>Escritura y áreas coinciden con lo publicado</span></label>
+      <label><input type="checkbox"><span>Informe predial / catastro revisado</span></label>
+      <label><input type="checkbox"><span>Si es PH: reglamento, alícuota y linderos claros</span></label>
+      <label><input type="checkbox"><span>Sin gravámenes / hipotecas pendientes <span class="sub">certificado del Registro</span></span></label>
+      <div class="grp-t">Entorno</div>
+      <label><input type="checkbox"><span>Sector seguro y consolidado</span></label>
+      <label><input type="checkbox"><span>Vías, transporte y servicios cercanos</span></label>
+      <label><input type="checkbox"><span>Sin riesgos (quebrada, ladera, ruido)</span></label>
     </div>
   </div>
 
-  <!-- OBSERVACIONES -->
-  <div class="seccion">
-    <div class="sec-title"><div class="dot" style="background:var(--blanco-suave)"></div>OBSERVACIONES</div>
-    <div class="campo">
-      <textarea id="observaciones" placeholder="Incidentes, novedades, comentarios del turno..."></textarea>
-    </div>
+  <div class="card">
+    <h2><span class="snum">4</span> Notas de la visita</h2>
+    <textarea id="notas" placeholder="Observaciones, defectos, cosas a negociar, número de contacto..."></textarea>
   </div>
 
-  <button class="btn-guardar" id="btnGuardar" onclick="guardarCuadre()">GUARDAR CUADRE DEL DÍA</button>
-</div>
+  <div class="btns">
+    <button class="primary" onclick="window.print()">Guardar / Imprimir PDF</button>
+    <button onclick="limpiar()">Limpiar ficha</button>
+    <span class="saved" id="saved" hidden>✓ Guardado en este dispositivo</span>
+  </div>
 
-<div class="toast" id="toast">
-  <span class="toast-icon" id="toastIcon">✅</span>
-  <div class="toast-msg" id="toastMsg"></div>
-  <div class="toast-sub" id="toastSub"></div>
+  <footer>ALTIA Inmobiliaria · Herramienta interna de estimación. Los valores son referenciales, basados en oferta de mercado del sector; confirma áreas, estado y situación legal antes de negociar.</footer>
 </div>
 
 <script>
-const CAJERO = 'EVER';
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzef6oRQJTb7cR3nTD-ATqvYJnusl3Jn3Ug4ppMNUcx4tC6VZ_pWLxjTpx5n2slCr83/exec';
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var fmt = function(n){ return '$' + Math.round(n).toLocaleString('es-EC'); };
+  var ids = ['dir','ter','con','anio','niv','dorm','ban','ped','estado','rcon','rter','notas'];
+  var KEY = 'altia_ficha_borja_v1';
 
-window.onload = () => {
-  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-  addGasto();
-  actualizarReloj();
-  setInterval(actualizarReloj, 1000);
-  prefillEfectivoInicial();
-};
+  function compute(){
+    var ter = parseFloat($('ter').value) || 0;
+    var con = parseFloat($('con').value) || 0;
+    var rter = parseFloat($('rter').value) || 0;
+    var rcon = parseFloat($('rcon').value) || 0;
+    var ped = parseFloat($('ped').value) || 0;
 
-// ── Leer una hoja del Sheet vía JSONP (mismo contrato que el Admin) ──
-function leerHoja(hoja) {
-  return new Promise(resolve => {
-    const cb = 'cb_' + hoja + '_' + Date.now();
-    const s  = document.createElement('script');
-    const t  = setTimeout(() => { delete window[cb]; s.remove(); resolve(null); }, 10000);
-    window[cb] = data => {
-      clearTimeout(t); delete window[cb]; s.remove();
-      resolve(data && data.status === 'ok' ? data.values : null);
-    };
-    s.src = SCRIPT_URL + '?hoja=' + encodeURIComponent(hoja) + '&callback=' + cb;
-    s.onerror = () => { clearTimeout(t); delete window[cb]; s.remove(); resolve(null); };
-    document.head.appendChild(s);
-  });
-}
+    var vTer = ter * rter, vCon = con * rcon, tot = vTer + vCon;
+    $('rTer').textContent = fmt(vTer);
+    $('rCon').textContent = fmt(vCon);
+    $('rTotal').textContent = fmt(tot);
 
-// ── Prellena "Efectivo al inicio" con el "Efectivo al cierre" de la última noche ──
-async function prefillEfectivoInicial() {
-  const hint = document.getElementById('efInicioHint');
-  const inp  = document.getElementById('efInicio');
-  try {
-    const rows = await leerHoja('REGISTROS');
-    // fila 0 = título, fila 1 = encabezados, fila 2+ = datos
-    const data = (rows || []).slice(2).filter(r => r && r[0]);
-    if (!data.length) return;
-    const last     = data[data.length - 1];
-    const efCierre = parseFloat(last[4]) || 0;   // col 4 = EF_CIERRE
-    const fechaAnt = String(last[0] || '').slice(0, 10);
-    // Solo prellenar si el usuario no escribió nada aún
-    if (!inp.value) inp.value = efCierre.toFixed(2);
-    hint.style.display = 'block';
-    hint.innerHTML = `↩ Prellenado con el <b style="color:var(--dorado)">efectivo al cierre</b> de la última noche` +
-                     (fechaAnt ? ` (${fechaAnt})` : '') +
-                     `: <b style="color:var(--dorado)">$${efCierre.toFixed(2)}</b>. Puedes editarlo si es necesario.`;
-    calcTotales();
-  } catch (e) { /* sin conexión: se deja vacío para ingreso manual */ }
-}
+    if(tot > 0){
+      $('rRange').textContent = 'Rango: ' + fmt(tot*0.92) + ' – ' + fmt(tot*1.08);
+      $('rPerM2').textContent = con > 0 ? fmt(tot/con) + '/m²' : '—';
+      $('brk').hidden = false;
+      $('bTerA').textContent = ter; $('bTerR').textContent = fmt(rter);
+      $('bConA').textContent = con; $('bConR').textContent = fmt(rcon);
+      $('bTerV').textContent = fmt(vTer); $('bConV').textContent = fmt(vCon); $('bTot').textContent = fmt(tot);
+      $('bOfferRow').hidden = false; $('bOffer').textContent = fmt(tot*0.95);
+    } else {
+      $('rRange').textContent = 'Rango: —'; $('rPerM2').textContent = '—'; $('brk').hidden = true;
+    }
 
-function actualizarReloj() {
-  const now = new Date();
-  document.getElementById('horaActual').textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  document.getElementById('diaActual').textContent = `${dias[now.getDay()]} ${now.getDate()} ${meses[now.getMonth()]}`;
-}
-
-function n(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
-
-function calcTotales() {
-  const efInicio = n('efInicio');
-  const efCierre = n('efCierre');
-  const efVendido = efCierre - efInicio;
-
-  // Diff efectivo
-  const el = document.getElementById('diffEf');
-  const vl = document.getElementById('diffEfValor');
-  if (!document.getElementById('efCierre').value && !document.getElementById('efInicio').value) {
-    el.className = 'diff-inline neutro'; vl.textContent = '—';
-  } else {
-    vl.textContent = (efVendido >= 0 ? '+' : '-') + '$' + Math.abs(efVendido).toFixed(2);
-    el.className = 'diff-inline ' + (efVendido >= 0 ? 'ok' : 'mal');
+    var v = $('verdict'), t = $('verdictTxt');
+    v.className = 'verdict';
+    if(tot <= 0){ v.classList.add('v-none'); t.textContent = 'Ingresa las áreas para calcular.'; return; }
+    if(ped <= 0){ v.classList.add('v-none'); t.textContent = 'Valor estimado listo. Ingresa el precio pedido para compararlo.'; return; }
+    var diff = (ped - tot) / tot * 100;
+    var ds = (diff>=0?'+':'') + diff.toFixed(0) + '%';
+    if(diff > 15){ v.classList.add('v-bad'); t.textContent = 'Pedido ' + ds + ' sobre el estimado — CARO. Negocia fuerte hacia ' + fmt(tot) + '.'; }
+    else if(diff > 5){ v.classList.add('v-warn'); t.textContent = 'Pedido ' + ds + ' sobre el estimado — algo alto. Apunta a ~' + fmt(tot) + '.'; }
+    else if(diff >= -5){ v.classList.add('v-good'); t.textContent = 'Pedido ' + ds + ' vs estimado — PRECIO JUSTO de mercado.'; }
+    else { v.classList.add('v-good'); t.textContent = 'Pedido ' + ds + ' bajo el estimado — OPORTUNIDAD. Verifica que no haya problemas ocultos.'; }
   }
 
-  const transfer = n('jep') + n('deuna');
-  const total = efVendido + n('tarjeta') + transfer;
-  document.getElementById('totalVentas').textContent = '$' + Math.max(total, 0).toFixed(2);
-}
-
-function calcGastos() {
-  let t = 0;
-  document.querySelectorAll('.gasto-monto').forEach(el => t += parseFloat(el.value) || 0);
-  document.getElementById('totalGastos').textContent = '$' + t.toFixed(2);
-}
-
-let gastoIds = [];
-function addGasto() {
-  const id = Date.now();
-  gastoIds.push(id);
-  const div = document.createElement('div');
-  div.className = 'gasto-row'; div.id = 'g' + id;
-  div.innerHTML = `
-    <input type="text" placeholder="Descripción..." />
-    <div class="gasto-money"><input type="number" min="0" step="0.01" placeholder="0.00" class="gasto-monto" oninput="calcGastos()" /></div>
-    <button class="btn-del" onclick="removeGasto(${id})">×</button>`;
-  document.getElementById('gastosContainer').appendChild(div);
-}
-function removeGasto(id) {
-  document.getElementById('g'+id)?.remove();
-  gastoIds = gastoIds.filter(x => x !== id);
-  calcGastos();
-}
-
-async function guardarCuadre() {
-  const fecha = document.getElementById('fecha').value;
-  if (!fecha) { showToast('error','⚠️','Falta la fecha',''); return; }
-
-  const efInicio  = n('efInicio');
-  const efCierre  = n('efCierre');
-  const efVendido = efCierre - efInicio;
-  const tarjeta   = n('tarjeta');
-  const jep       = n('jep');
-  const deuna     = n('deuna');
-  const transfer  = jep + deuna;
-  const totalV    = Math.max(efVendido + tarjeta + transfer, 0);
-
-  const gastosData = [];
-  document.querySelectorAll('.gasto-row').forEach(row => {
-    const desc  = row.querySelector('input[type="text"]')?.value?.trim() || '';
-    const monto = parseFloat(row.querySelector('.gasto-monto')?.value) || 0;
-    if (desc || monto > 0) gastosData.push([desc, monto]);
-  });
-  const totalG = gastosData.reduce((s,[,v]) => s+v, 0);
-  const obs = document.getElementById('observaciones').value.trim();
-  const ts  = new Date().toISOString();
-  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  const diaSem = dias[new Date(fecha + 'T12:00:00').getDay()];
-
-  // Columnas: FECHA | DIA | CAJERO | EF_INICIO | EF_CIERRE | EF_VENDIDO | TARJETA | JEP | DEUNA | TRANSFERENCIAS | TOTAL_VENTAS | G1D|G1V|G2D|G2V|G3D|G3V|G4D|G4V|G5D|G5V | TOTAL_GASTOS | OBS | TIMESTAMP
-  const fila = [
-    fecha, diaSem, CAJERO,
-    efInicio, efCierre, efVendido,
-    tarjeta, jep, deuna, transfer, totalV,
-    gastosData[0]?.[0]||'', gastosData[0]?.[1]||0,
-    gastosData[1]?.[0]||'', gastosData[1]?.[1]||0,
-    gastosData[2]?.[0]||'', gastosData[2]?.[1]||0,
-    gastosData[3]?.[0]||'', gastosData[3]?.[1]||0,
-    gastosData[4]?.[0]||'', gastosData[4]?.[1]||0,
-    totalG, obs, ts
-  ];
-
-  const btn = document.getElementById('btnGuardar');
-  btn.innerHTML = '<span class="spinner"></span>GUARDANDO...';
-  btn.disabled = true;
-
-  try {
-    await fetch('https://script.google.com/macros/s/AKfycbzef6oRQJTb7cR3nTD-ATqvYJnusl3Jn3Ug4ppMNUcx4tC6VZ_pWLxjTpx5n2slCr83/exec', {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ hoja: 'REGISTROS', values: fila })
-    });
-    showToast('ok','✅','Cuadre guardado', `Ventas $${totalV.toFixed(2)} · Gastos $${totalG.toFixed(2)}`);
-    limpiar();
-  } catch(e) {
-    guardarLocal(fila, totalV, totalG);
+  function save(){
+    try{
+      var d = {};
+      ids.forEach(function(i){ d[i] = $(i).value; });
+      var cbs = []; document.querySelectorAll('#chk input').forEach(function(c){ cbs.push(c.checked); });
+      d._cbs = cbs;
+      localStorage.setItem(KEY, JSON.stringify(d));
+      var s = $('saved'); s.hidden = false; clearTimeout(window._st); window._st = setTimeout(function(){ s.hidden = true; }, 1500);
+    }catch(e){}
   }
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY); if(!raw) return;
+      var d = JSON.parse(raw);
+      ids.forEach(function(i){ if(d[i] != null) $(i).value = d[i]; });
+      if(d._cbs){ var cbs = document.querySelectorAll('#chk input'); d._cbs.forEach(function(v,i){ if(cbs[i]) cbs[i].checked = v; }); }
+    }catch(e){}
+  }
+  window.limpiar = function(){
+    if(!confirm('¿Borrar todos los datos de la ficha?')) return;
+    ids.forEach(function(i){ $(i).value = (i==='rcon'?'600':i==='rter'?'300':''); });
+    $('estado').value = '600';
+    document.querySelectorAll('#chk input').forEach(function(c){ c.checked = false; });
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    compute();
+  };
 
-  btn.innerHTML = 'GUARDAR CUADRE DEL DÍA';
-  btn.disabled = false;
-}
+  $('estado').addEventListener('change', function(){ $('rcon').value = this.value; compute(); save(); });
+  ids.forEach(function(i){ $(i).addEventListener('input', function(){ compute(); save(); }); });
+  document.querySelectorAll('#chk input').forEach(function(c){ c.addEventListener('change', save); });
 
-function guardarLocal(fila, totalV, totalG) {
-  const r = JSON.parse(localStorage.getItem('brunch_registros') || '[]');
-  r.push(fila);
-  localStorage.setItem('brunch_registros', JSON.stringify(r));
-  showToast('ok','💾','Guardado localmente', `Ventas $${totalV.toFixed(2)} · ${r.length} registros`);
-  limpiar();
-}
-
-function limpiar() {
-  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-  ['efInicio','efCierre','tarjeta','jep','deuna','observaciones'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = '';
-  });
-  document.getElementById('gastosContainer').innerHTML = '';
-  gastoIds = [];
-  addGasto();
-  calcTotales(); calcGastos();
-}
-
-function showToast(tipo, icon, msg, sub) {
-  const t = document.getElementById('toast');
-  document.getElementById('toastIcon').textContent = icon;
-  document.getElementById('toastMsg').textContent = msg;
-  document.getElementById('toastSub').textContent = sub;
-  t.className = 'toast show ' + tipo;
-  setTimeout(() => t.className = 'toast ' + tipo, 4000);
-}
+  load(); compute();
+})();
 </script>
 </body>
 </html>
